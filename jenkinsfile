@@ -2,7 +2,7 @@ def COLOR_MAP = [
     'SUCCESS': 'good', 
     'FAILURE': 'danger',
 ]
-def WEB_URL = 'https://week6gallery-lxi2.onrender.com/'
+def WEB_URL = 'https://gallery-attk.onrender.com/'
 
 pipeline {
     agent any
@@ -45,7 +45,7 @@ pipeline {
         }
         stage('Clone github repository') {
             steps {
-                git url: 'https://github.com/htoloi/WEEK6GALLERY.git', branch: 'master'
+                git url: 'https://github.com/htoloi/gallery.git', branch: 'master'
             }
         }
         stage('Install dependencies') {
@@ -66,7 +66,7 @@ pipeline {
         stage('Deploy to render') {
             steps {
                 sh '''
-                   curl -d POST https://api.render.com/deploy/srv-cg54b8rhp8u9l27ogs00?key=y6uwJbobS18
+                   curl -d POST https://api.render.com/deploy/srv-cg308i64dada1e3v77bg?key=VZmbKbu5060
                    '''
             }
         }
