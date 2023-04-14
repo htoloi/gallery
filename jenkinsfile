@@ -2,36 +2,37 @@ def COLOR_MAP = [
     'SUCCESS': 'good', 
     'FAILURE': 'danger',
 ]
-def WEB_URL = 'https://gallery-attk.onrender.com/'
+def WEB_URL = 'https://week6gallery-lxi2.onrender.com/'
 
 pipeline {
     agent any
-    environment {
+        environment {
 
-        EMAIL_BODY =
+        EMAIL_BODY = 
 
         """
-
-            <p>EXECUTED: Job <b>\'${env.JOB_NAME}:${env.BUILD_NUMBER})\'</b></p>
-
+            <p>EXECUTED: Job <b>\'${env.JOB_NAME}:${env.BUILD_NUMBER}\'</b></p>
             <p>
-
-            View console output at
-
+            View console output at 
             "<a href="${env.BUILD_URL}">${env.JOB_NAME}:${env.BUILD_NUMBER}</a>"
-
-            </p>
-
+            </p> 
             <p><i>(Build log is attached.)</i></p>
-
         """
 
-        EMAIL_SUBJECT_SUCCESS = "Status: 'SUCCESS' -Job \'${env.JOB_NAME}:${env.BUILD_NUMBER}\'"
+        EMAIL_SUBJECT_SUCCESS = "Status: 'SUCCESSFUL' -Job \'${env.JOB_NAME}:${env.BUILD_NUMBER}\'" 
 
-        EMAIL_SUBJECT_FAILURE = "Status: 'FAILURE' -Job \'${env.JOB_NAME}:${env.BUILD_NUMBER}\'"
+        EMAIL_SUBJECT_FAILURE = "Status: 'FAILED' -Job \'${env.JOB_NAME}:${env.BUILD_NUMBER}\'" 
 
         EMAIL_RECEPIENT = 'toloih@gmail.com'
-
+        }
+        post{
+        always{
+            emailext to: "toloih@gmail.com",
+            subject: "jenkins build:${currentBuild.currentResult}: ${env.JOB_NAME}",
+            body: "${currentBuild.currentResult}: Job ${env.JOB_NAME}\nMore Info can be found here: ${env.BUILD_URL}"
+            slackSend channel: "hassan_ip1",color: COLOR_MAP[currentBuild.currentResult], message: "Build Started: ${env.JOB_NAME} ${env.BUILD_NUMBER} (<${env.BUILD_URL}|Open>)"
+            
+        }
     }
 
     tools {nodejs "node"}
@@ -44,40 +45,39 @@ pipeline {
         }
         stage('Clone github repository') {
             steps {
-                git url: 'https://github.com/htoloi/gallery.git', branch: 'master'
+                git url: 'https://github.com/htoloi/WEEK6GALLERY.git', branch: 'master'
             }
         }
         stage('Install dependencies') {
             steps {
-                bat '''
+                sh '''
+                   
                    npm install
                    '''
             }
         }
-         stage('Test') {
+        stage('Run test') {
             steps {
-                bat '''
-                    npm run test
-                   '''
-                }
-          }
-        stage('Deployment') {
-            steps {
-                bat '''
-                   curl -X POST https://api.render.com/deploy/srv-cg308i64dada1e3v77bg?key=VZmbKbu5060
+                sh '''
+                   npm test
                    '''
             }
         }
-
+        stage('Deploy to render') {
+            steps {
+                sh '''
+                   curl -d POST https://api.render.com/deploy/srv-cg54b8rhp8u9l27ogs00?key=y6uwJbobS18
+                   '''
+            }
+        }
         stage('End') {
             steps {
                 echo 'Build has run successfully'
             }
         }
-
     }
 
-     post {
+    post {
         success {
             emailext attachLog: true,
                 body: EMAIL_BODY,
